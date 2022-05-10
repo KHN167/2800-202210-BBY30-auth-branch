@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to BigBrain!</title>
+
+    <!-- Footer -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!----------->
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/index.css">
+    <!--------->
+
+
+    <script src="https://randojs.com/1.0.0.js"></script>
+
+</head>
+
+<script>
+
+</script>
+<script>
+    
+    function generateRand() {
+        document.getElementById("number1").innerHTML = rando(100);
+        document.getElementById("number2").innerHTML = rando(100);
+    }
+
+
+    function submit() {
+       var num1 = parseInt(document.getElementById("number1").innerHTML);
+       var num2 = parseInt(document.getElementById("number2").innerHTML);
+       var sum = num1 + num2;
+
+       score = null;
+       
+       var userInput = parseInt(document.getElementById("inputID").value);
+
+       if(userInput == sum) {
+           alert('succuss');
+           score =+ 50;
+           alert(score);
+       } else {
+           alert('fail');
+           score =- 20;
+       }
+       
+       
+    }
+</script>
+
+<body onload = "generateRand();">
+
+    
+
+    <table> 
+        <td id="number1"></td>
+        <td id="number2"></td>
+    </table>
+
+    <label id="gamescore">0</label>
+
+    <input type="text" placeholder="type" id="inputID"/>
+    <button onclick="submit()">submit</button>
+
+    
+
+    <nav id="footer"></nav>
+
+    <script src="/scripts/skeleton.js"></script>
+</body>
+
+</html>
