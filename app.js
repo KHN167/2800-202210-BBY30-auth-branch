@@ -16,13 +16,8 @@ const res = require("express/lib/response");
 const req = require("express/lib/request");
 const passport = require('passport');
 
-const users = []
-const initializePassport = require('./passport-setup')
-initializePassport(
-  passport,
-  username => users.find(user => user.username === username),
-  id => users.find(user => user.id === id)
-)
+
+
 
 
 mongoose.connect('mongodb+srv://Khn167:mlhch6IIJRXmUzU4@cluster0.2afy9.mongodb.net/test',  {
@@ -30,7 +25,6 @@ mongoose.connect('mongodb+srv://Khn167:mlhch6IIJRXmUzU4@cluster0.2afy9.mongodb.n
     useUnifiedTopology: true,
 })
 
-app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
 app.use(require("express-session")({
@@ -40,12 +34,13 @@ app.use(require("express-session")({
 }))
 
 
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-passport.use(new LocalStrategy(User.authenticate()));
-
-app.use(express.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -73,10 +68,12 @@ app.get('/admin', checkAuthenticated,  (req, res) =>{
 	res.sendFile(path.join(__dirname, '/public/admin.html'))
 })
 
-app.post('/login', checkLoggedIn, passport.authenticate('local', {
+app.post('/login', checkLoggedIn, passport.authenticate("local", {
 	successRedirect: '/dashboard',
-	failureRedirect: '/login',
-  }))
+	failureRedirect: '/login'
+  }), function(req, res){
+
+  });
 
 app.get('/register' , checkLoggedIn,  (req, res) => {
 	res.sendFile(path.join(__dirname, '/public/signup.html'))
@@ -84,29 +81,17 @@ app.get('/register' , checkLoggedIn,  (req, res) => {
 })
 
 app.post('/register', checkLoggedIn, (req, res) => {
-	Users = new User({
-		username: req.body.username
-	});
 
-	User.register(Users, req.body.password, function(err, user){
+	User.register(new User({username: req.body.username}), req.body.password, function(err, user){
 		if(err) {
-			res.json({
-				success: false,
-				message: 'Your account could not be saved',
-				err
-			})
-
-		} else {
-			res.json({
-				success: true,
-				message: 'Your account was saved',
-			})
+			console.log(err);
+			return res.redirect('/register')
 		}
+		passport.authenticate("local")(req, res, function(){
+			res.redirect("/login");
+		});
 	});
-
-	
-
-  })
+  });
 
 
 
@@ -128,7 +113,6 @@ function checkAuthenticated(req, res, next) {
 	if(req.isAuthenticated()){
 		return next()
 	}
-
 	res.redirect('/login')
 }
 
