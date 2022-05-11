@@ -15,6 +15,7 @@ const methodOverride = require('method-override');
 const res = require("express/lib/response");
 const req = require("express/lib/request");
 const passport = require('passport');
+const { redirect } = require("express/lib/response");
 
 
 
@@ -74,28 +75,43 @@ app.get('/userProfile', checkAuthenticated, (req, res) => {
 	res.sendFile(path.join(__dirname, '/public/userProfile.html'))
 })
 
-app.post('/userProfile', async (req, res) => {
-	const { password } = req.body;
-
-	let restP = new User();
-
-    try {
-      const newP = await restP.generateHash(password.password);
-
-      const resetP = await User.findByIdAndUpdate(
-        req.params.id,
-        { $set: { passwordHash: newP } },
-        {
-          fields: { passwordHash: 0 },
-          new: true
-        }
-      )
-
-      res.send(resetP);
-    } catch (error) {
-      console.log(error);
-      return res.status(400).send(error);
+app.post('/userProfile', async (req, res,) => {
+	const updateData = req.body;
+	if (!updateData){
+        res.status(444).send({"message":"please provide what you want to update"})
     }
+	User.findOne({ username: req.user.username }, (err, user) =>{
+
+		if(typeof updateData.username !== 'undefined') {
+			user.username = updateData.username;
+		}
+
+		if(typeof updateData.firstname !== 'undefined') {
+			user.firstname = updateData.firstname;
+		}
+
+		if(typeof updateData.lastname !== 'undefined') {
+			user.lastname = updateData.lastname;
+		}
+
+		if(typeof updateData.password !== 'undefined') {
+			user.setPassword(req.body.password, function(err,users){
+				User.updateOne({_id: users._id }, {hash: users.hash, salt: users.salt} ,
+					(err,result) => {
+						if(err) {
+							console.log(err);
+						} else {
+							console.log('success');
+							redirect('/login');
+						}
+					})
+			})
+
+		}
+		return user.save();
+	})
+	
+	
 })
 
 app.post('/login', checkLoggedIn, passport.authenticate("local", {
