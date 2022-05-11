@@ -68,6 +68,36 @@ app.get('/admin', checkAuthenticated,  (req, res) =>{
 	res.sendFile(path.join(__dirname, '/public/admin.html'))
 })
 
+
+
+app.get('/userProfile', checkAuthenticated, (req, res) => {
+	res.sendFile(path.join(__dirname, '/public/userProfile.html'))
+})
+
+app.post('/userProfile', async (req, res) => {
+	const { password } = req.body;
+
+	let restP = new User();
+
+    try {
+      const newP = await restP.generateHash(password.password);
+
+      const resetP = await User.findByIdAndUpdate(
+        req.params.id,
+        { $set: { passwordHash: newP } },
+        {
+          fields: { passwordHash: 0 },
+          new: true
+        }
+      )
+
+      res.send(resetP);
+    } catch (error) {
+      console.log(error);
+      return res.status(400).send(error);
+    }
+})
+
 app.post('/login', checkLoggedIn, passport.authenticate("local", {
 	successRedirect: '/dashboard',
 	failureRedirect: '/login'
@@ -82,7 +112,7 @@ app.get('/register' , checkLoggedIn,  (req, res) => {
 
 app.post('/register', checkLoggedIn, (req, res) => {
 
-	User.register(new User({username: req.body.username}), req.body.password, function(err, user){
+	User.register(new User({username: req.body.username, firstname: req.body.firstname, lastname: req.body.lastname}), req.body.password, function(err, user){
 		if(err) {
 			console.log(err);
 			return res.redirect('/register')
